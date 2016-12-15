@@ -40,68 +40,68 @@ document.body.appendChild(controlView)
 const stickACanvas = document.getElementById('axe1')
 
 const cat = {
-  rSpeed: 3,
+  rSpeed: 3, // speed of the relative mode (3° max per 1/60 th sec)
   forceKb: false, // dev mode
-  ts: -1,
-  mode: 'mouse',
-  gamePad: false,
-  isRunning: false,
-  hardware: false,
-  bot: {},
-  isLaserOn: false,
-  isRealtive: true,
+  ts: -1, // timestamp of the last gamepad event
+  mode: 'mouse', // control mode 'mouse', 'gamepad' suported now
+  gamePad: false, // is there a gamepad connected
+  isRunning: true, // is the raf loop running
+  hardware: false, // is there an arduino with firmata connected
+  hwM: false, // should the hardware move this frame (not yet implemented)
+  bot: {}, // contain x y laser, ref to the bot hw
+  isLaserOn: false, // is the laser on ?
+  pos: [90, 90],
+  prevPos: [0, 0],
+  isRealtive: true, // relative mode
   pad: {
     isBtActive: false,
     prevState: {}
   },
-  pos: [90, 90]
+  window: {x: 0, y: 0}
 }
 
 function frame (timestamp) {
   let pad = {}
+  switch (cat.mode) {
+    case 'mouse':
+      break
+    case 'gamePad':
 
-  // not sure if this is the right way to implement the frame (check game mode each frame is probably sub optimal)
-  if (cat.forceKb === true) {
-    console.log('yo')
-  } else if (cat.gamePad) {
-    pad = poolGp()
-    canLib.draw(pad, stickACanvas)
-    if (pad.a === true && cat.pad.isBtActive === false) {
-      console.log('A dwn')
-      cat.pad.isBtActive = true
-    } else if (pad.a === false && cat.pad.isBtActive === true) {
-      console.log('A rlz')
-      if (cat.hardware === true) {
-        cat.isLaserOn === true ? cat.bot.l.off() : cat.bot.l.on()
-        cat.isLaserOn = !cat.isLaserOn
+      pad = poolGp()
+      canLib.draw(pad, stickACanvas)
+      if (pad.a === true && cat.pad.isBtActive === false) {
+        dbg('A dwn')
+        cat.pad.isBtActive = true
+      } else if (pad.a === false && cat.pad.isBtActive === true) {
+        dbg('A rlz')
+        if (cat.hardware === true) {
+          cat.isLaserOn === true ? cat.bot.l.off() : cat.bot.l.on()
+          cat.isLaserOn = !cat.isLaserOn
+        }
+        cat.pad.isBtActive = false
       }
-      cat.pad.isBtActive = false
-    }
-    if (pad.ts !== cat.ts) cat.ts = pad.ts
-  }
-  if (cat.hardware === true) {
-    let x
-    let y
+      if (cat.isRealtive) {
+        cat.pos[0] = cat.pos[0] + rng(pad.x, [-1, 1], [cat.rSpeed, -1 * cat.rSpeed])
+        cat.pos[1] = cat.pos[1] + rng(pad.y, [-1, 1], [cat.rSpeed, -1 * cat.rSpeed])
+      } else {
+        cat.pos[0] = rng(pad.x, [-1, 1], [170, 10])
+        cat.pos[1] = rng(pad.y, [-1, 1], [170, 10])
+      }
+      if (pad.ts !== cat.ts) cat.ts = pad.ts
+      break
 
-    if (cat.isRealtive) {
-      x = rng(pad.x, [-1, 1], [cat.rSpeed, -1 * cat.rSpeed])
-      y = rng(pad.y, [-1, 1], [cat.rSpeed, -1 * cat.rSpeed])
-      cat.pos[0] = cat.pos[0] + x
-      cat.pos[1] = cat.pos[1] + y
-    } else {
-      cat.pos[0] = rng(pad.x, [-1, 1], [180, 0])
-      cat.pos[1] = rng(pad.y, [-1, 1], [180, 0])
-    }
-    cat.pos.forEach(function (pos, i) {
-      console.log(pos, i)
-      if (pos > 170) cat.pos[i] = 170
-      if (pos < 10) cat.pos[i] = 10
-      console.log(pos, i)
-      return pos
-    })
-    console.log(cat.pos)
+    default:
+      dbg(cat.mode)
+      break
+  }
+
+  if (cat.hardware === true) {
+    // if (cat.pos[1] !== cat.prevPos[1] && cat.pos[0] !== cat.prevPos[0]) {
+      // dbg('dif')
     cat.bot.x.to(cat.pos[0])
     cat.bot.y.to(cat.pos[1])
+    cat.prevPos = cat.pos
+    // }
   }
   if (cat.isRunning === true) {
     requestAnimationFrame(frame)
@@ -122,29 +122,21 @@ board.on('ready', function () {
 })
 
 function padConCb () {
+  dbg('con cb called')
   cat.gamePad = true
+  cat.mode = 'gamePad'
   cat.isRunning = true
   requestAnimationFrame(frame)
 }
 function padDecoCb () {
   cat.gamePad = false
+  cat.mode = 'mouse'
   cat.isRunning = false
 }
 
 if (canGame()) {
   console.log('game Api is supported yay')
   gPSetup(padConCb, padDecoCb)
-}
-
-function getMousePos (rect, evt) {
-  const pos = {
-    x: evt.clientX - rect.left,
-    y: evt.clientY - rect.top
-  }
-  console.log(pos)
-  pos.x = rng(pos.x, [0, rect.width], [-1, 1])
-  pos.y = rng(pos.y, [rect.height, 0], [-1, 1])
-  return pos
 }
 
 function gPSetup (conCB, decoCB) {
@@ -159,13 +151,44 @@ function gPSetup (conCB, decoCB) {
   })
 }
 
+function getMousePos (evt) {
+  if (cat.window.x) cat.window = getWinInfo()
+  return {
+    x: rng(evt.clientX, [0, cat.window.x], [-1, 1]),
+    y: rng(evt.clientY, [cat.window.y, 0], [-1, 1])
+  }
+}
+
+window.onresize = resize
+
+function resize () {
+  cat.window = getWinInfo()
+  dbg('rsz called')
+}
+
 function mouseSetup (canvas) {
-  canvas.addEventListener('mousemove', function (evt) {
-    const rect = canvas.getBoundingClientRect()
-    let mousePos = getMousePos(rect, evt)
-    let message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
-    console.log(message)
+  cat.window = getWinInfo()
+
+  window.addEventListener('mousemove', function (evt) {
+    const mousePos = getMousePos(evt)
+    cat.pos[0] = rng(mousePos.x, [-1, 1], [170, 10])
+    cat.pos[1] = rng(mousePos.y, [-1, 1], [170, 10])
+    console.log(cat.pos)
   }, false)
+}
+
+function getWinInfo () {
+  const width = window.innerWidth ||
+  document.documentElement.clientWidth ||
+  document.body.clientWidth
+
+  const height = window.innerHeight ||
+  document.documentElement.clientHeight ||
+  document.body.clientHeight
+  return {
+    x: width,
+    y: height
+  }
 }
 
 function kbSetup (canvas) {
@@ -184,10 +207,7 @@ function canvaClick (e) {
   canKey.draw(pad, stickACanvas)
 }
 
-mouseSetup(stickACanvas)
+mouseSetup()
 // kbSetup(stickACanvas)
-
-
-
 
 canKey.draw({x: 0, y: 0}, stickACanvas)
