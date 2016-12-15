@@ -1,4 +1,5 @@
-const _ = require('lodash')
+/* all about gamepad */
+const dbg = require('debug')('catbot:gPad')
 /**
  * check availability of the gampad api
  *
@@ -8,8 +9,13 @@ function canGame () {
   return 'getGamepads' in navigator
 }
 
-function poolGp (prevData) {
-  const pad = navigator.getGamepads()[0]
+/**
+ * pools the gamepad an return an object containing the 2 axes and the status of button A (pressed)
+ *
+ * @returns
+ */
+function poolGp () {
+  const pad = navigator.getGamepads()[0] // only scan for the forst gp
   const padData = {
     x: pad.axes[0],
     y: pad.axes[1],
@@ -19,20 +25,23 @@ function poolGp (prevData) {
   return padData
 }
 
+/**
+ * setup of the gamepad listerners when a pad connect disconnect
+ *
+ * @param {function} conCB callback on gampad connect
+ * @param {function} decoCB callback on gampad disconnect
+ */
 function makeLaserPad (conCB, decoCB) {
   window.addEventListener('gamepadconnected', function () {
-    console.log('connection event')
+    dbg('connection event')
     if (conCB) conCB()
   })
 
   window.addEventListener('gamepaddisconnected', function () {
-    console.log('disconnection event')
+    dbg('disconnection event')
     if (decoCB) decoCB()
   })
 }
-
-
-
 
 module.exports = {
   canGame,

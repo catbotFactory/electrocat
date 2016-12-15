@@ -1,24 +1,23 @@
 /* global requestAnimationFrame */
 'use strict'
-
-const h = require('hyperscript')
+const dbg = require('debug')('catbot:app')
 const controlView = require('./views/control')
+
+dbg('app loaded')
 
 const Gpad = require('./gamePad')
 var five = require('johnny-five')
 
 const canKey = require('./drawKeyboardCanvas')
-
+const canDraw = require('./drawKeyboardCanvas').draw
 const canLib = require('./drawGamepadCanvas')
+
 const canGame = Gpad.canGame
 const poolGp = Gpad.poolGp
 const makeLaserPad = Gpad.makeLaserPad
 
 const u = require('./utils')
 const rng = u.convertRange // range converter
-
-// cat config vars (TODO: make them separated ?)
-const rSpeed = 3 // degree per cycle in relative mode
 
 // patch j5 for missing stdin in electon
 var Readable = require('stream').Readable
@@ -35,22 +34,16 @@ process.__defineGetter__('stdin', function () {
   return process.__stdin
 })
 
-
-// const bases = h('.wrapper', {},
-//   h('#gamepadPrompt', prmpt),
-//   h('#catStatus'),
-//   h('canvas#axe1', {width: 400, height: 400}),
-//   h('#padInfoCont', h('#pad0'))
-// )
-
 document.body.appendChild(controlView)
+
 // const padInfo = document.getElementById('padInfoCont')
 const stickACanvas = document.getElementById('axe1')
 
 const cat = {
+  rSpeed: 3,
   forceKb: false, // dev mode
   ts: -1,
-  mode: 'keyboard',
+  mode: 'mouse',
   gamePad: false,
   isRunning: false,
   hardware: false,
@@ -91,8 +84,8 @@ function frame (timestamp) {
     let y
 
     if (cat.isRealtive) {
-      x = rng(pad.x, [-1, 1], [rSpeed, -1 * rSpeed])
-      y = rng(pad.y, [-1, 1], [rSpeed, -1 * rSpeed])
+      x = rng(pad.x, [-1, 1], [cat.rSpeed, -1 * cat.rSpeed])
+      y = rng(pad.y, [-1, 1], [cat.rSpeed, -1 * cat.rSpeed])
       cat.pos[0] = cat.pos[0] + x
       cat.pos[1] = cat.pos[1] + y
     } else {
@@ -128,16 +121,19 @@ board.on('ready', function () {
   cat.bot.l = laser
 })
 
+function padConCb () {
+  cat.gamePad = true
+  cat.isRunning = true
+  requestAnimationFrame(frame)
+}
+function padDecoCb () {
+  cat.gamePad = false
+  cat.isRunning = false
+}
+
 if (canGame()) {
   console.log('game Api is supported yay')
-  makeLaserPad(() => {
-    cat.gamePad = true
-    cat.isRunning = true
-    requestAnimationFrame(frame)
-  }, () => {
-    cat.gamePad = false
-    cat.isRunning = false
-  })
+  gPSetup(padConCb, padDecoCb)
 }
 
 function getMousePos (rect, evt) {
@@ -151,6 +147,17 @@ function getMousePos (rect, evt) {
   return pos
 }
 
+function gPSetup (conCB, decoCB) {
+  window.addEventListener('gamepadconnected', function () {
+    console.log('connection event')
+    if (conCB) conCB()
+  })
+
+  window.addEventListener('gamepaddisconnected', function () {
+    console.log('disconnection event')
+    if (decoCB) decoCB()
+  })
+}
 
 function mouseSetup (canvas) {
   canvas.addEventListener('mousemove', function (evt) {
@@ -179,5 +186,8 @@ function canvaClick (e) {
 
 mouseSetup(stickACanvas)
 // kbSetup(stickACanvas)
+
+
+
 
 canKey.draw({x: 0, y: 0}, stickACanvas)
