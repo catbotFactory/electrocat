@@ -111,9 +111,9 @@ function frame (timestamp) {
 const board = new five.Board()
 
 board.on('ready', function () {
-  const servoy = new five.Servo({pin: 10, startAt: 90, range: [10, 170]})
-  const servox = new five.Servo({pin: 9, startAt: 90, range: [10, 170]})
-  const laser = new five.Led(12)
+  const servox = new five.Servo({pin: 10, startAt: 90, range: [10, 170]})
+  const servoy = new five.Servo({pin: 11, startAt: 90, range: [10, 170]})
+  const laser = new five.Led(13)
 
   cat.hardware = true
   cat.bot.x = servox
@@ -168,13 +168,14 @@ function resize () {
 
 function mouseSetup (canvas) {
   cat.window = getWinInfo()
-
   window.addEventListener('mousemove', function (evt) {
     const mousePos = getMousePos(evt)
-    cat.pos[0] = rng(mousePos.x, [-1, 1], [170, 10])
-    cat.pos[1] = rng(mousePos.y, [-1, 1], [170, 10])
+    cat.pos[0] = rng(mousePos.x, [-1, 1], [160, 20])
+    cat.pos[1] = rng(mousePos.y, [-1, 1], [160, 20])
     console.log(cat.pos)
   }, false)
+  cat.isRunning = true
+  requestAnimationFrame(frame)
 }
 
 function getWinInfo () {
