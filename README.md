@@ -26,3 +26,11 @@ it will allow non programmer to use a built catbot with it's arduino flashed wit
 
 ### code 
 
+entrypoint is app/testBoard this test the board for firmata, and then will 
+- create cat.rc
+- calibrate the cat
+
+### build
+
+```npm run dist```
+

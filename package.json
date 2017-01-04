@@ -1,20 +1,23 @@
 {
-  "name": "electron-johnny-five-servo-example",
+  "name": "electro-cat",
   "version": "0.1.0",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "postinstall" : "electron-rebuild",
+    "pack": "build --dir",
+    "dist": "build"
   },
   "devDependencies": {
     "electron-rebuild": "^1.4.0",
     "eslint": "^3.11.0",
     "eslint-config-standard": "^6.2.1",
     "eslint-plugin-promise": "^3.4.0",
+    "electron-prebuilt": "^0.36.7",
     "eslint-plugin-standard": "^2.0.1"
   },
   "dependencies": {
     "debug": "^2.4.3",
-    "electron-prebuilt": "^0.36.7",
     "johnny-five": "^0.9.23",
     "hyperscript": "^2.0.2",
     "lodash": "^4.17.2"
@@ -24,11 +27,19 @@
     "type": "git",
     "url": "git+https://github.com:gorhgorh/electrocat.git"
   },
+
   "keywords": [
     "electron",
     "johnny-five",
     "catbot"
   ],
+  "build": {
+    "appId": "com.electron.electro-cat",
+    "dmg": {
+      "backgroundColor":"#eee",
+      "background":"build/background.png"
+    }
+  },
   "author": "Jérome Loï",
   "license": "GPL",
   "bugs": {
