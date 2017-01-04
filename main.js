@@ -1,6 +1,7 @@
-const app = require('app')
+const electron = require('electron')
+const app = electron.app
 const path = require('path')
-const BrowserWindow = require('browser-window')
+const BrowserWindow = electron.BrowserWindow
 
 var mainWindow = null
 
@@ -13,7 +14,7 @@ app.on('ready', function () {
   })
   mainWindow.webContents.openDevTools()
 
-  mainWindow.loadURL(path.join('file://', __dirname, '/app/index.html'))
+  mainWindow.loadURL(path.join('file://', __dirname, '/app/test.html'))
   mainWindow.on('closed', function () {
     mainWindow = null
   })
