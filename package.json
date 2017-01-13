@@ -4,7 +4,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "postinstall" : "electron-rebuild",
+    "postinstall": "electron-rebuild",
     "pack": "build --dir",
     "dist": "build"
   },
@@ -17,9 +17,10 @@
     "eslint-plugin-standard": "^2.0.1"
   },
   "dependencies": {
+    "catbot": "^1.0.1",
     "debug": "^2.4.3",
-    "johnny-five": "^0.9.23",
     "hyperscript": "^2.0.2",
+    "johnny-five": "^0.9.23",
     "lodash": "^4.17.2"
   },
   "description": "Electron for catbot",
@@ -27,7 +28,6 @@
     "type": "git",
     "url": "git+https://github.com:gorhgorh/electrocat.git"
   },
-
   "keywords": [
     "electron",
     "johnny-five",
@@ -36,8 +36,8 @@
   "build": {
     "appId": "com.electron.electro-cat",
     "dmg": {
-      "backgroundColor":"#eee",
-      "background":"build/background.png"
+      "backgroundColor": "#eee",
+      "background": "build/background.png"
     }
   },
   "author": "Jérome Loï",
