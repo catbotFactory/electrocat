@@ -14,7 +14,7 @@ app.on('ready', function () {
   })
   mainWindow.webContents.openDevTools()
 
-  mainWindow.loadURL(path.join('file://', __dirname, '/app/test.html'))
+  mainWindow.loadURL(path.join('file://', __dirname, '/app/index.html'))
   mainWindow.on('closed', function () {
     mainWindow = null
   })

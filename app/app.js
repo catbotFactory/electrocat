@@ -113,7 +113,7 @@ const board = new five.Board()
 board.on('ready', function () {
   const servox = new five.Servo({pin: 10, startAt: 90, range: [10, 170]})
   const servoy = new five.Servo({pin: 11, startAt: 90, range: [10, 170]})
-  const laser = new five.Led(13)
+  const laser = new five.Led(12)
 
   cat.hardware = true
   cat.bot.x = servox
@@ -168,6 +168,10 @@ function resize () {
 
 function mouseSetup (canvas) {
   cat.window = getWinInfo()
+  window.addEventListener('click', function (evt) {
+    console.log(evt)
+    cat.bot.l.toggle()
+  })
   window.addEventListener('mousemove', function (evt) {
     const mousePos = getMousePos(evt)
     cat.pos[0] = rng(mousePos.x, [-1, 1], [160, 20])
@@ -192,21 +196,21 @@ function getWinInfo () {
   }
 }
 
-function kbSetup (canvas) {
-  console.log('setup keyboard')
-  canvas.addEventListener('click', canvaClick, false)
-}
+// function kbSetup (canvas) {
+//   console.log('setup keyboard')
+//   canvas.addEventListener('click', canvaClick, false)
+// }
 
-function canvaClick (e) {
-  console.log('clicked')
-  const x = e.offsetX < 150 ? e.offsetX : 150
-  const y = e.offsetY < 150 ? e.offsetY : 150
-  const pad = {
-    x: rng(x, [0, 150], [-1, 1]),
-    y: rng(y, [0, 150], [1, -1])
-  }
-  canKey.draw(pad, stickACanvas)
-}
+// function canvaClick (e) {
+//   console.log('clicked')
+//   const x = e.offsetX < 150 ? e.offsetX : 150
+//   const y = e.offsetY < 150 ? e.offsetY : 150
+//   const pad = {
+//     x: rng(x, [0, 150], [-1, 1]),
+//     y: rng(y, [0, 150], [1, -1])
+//   }
+//   canKey.draw(pad, stickACanvas)
+// }
 
 mouseSetup()
 // kbSetup(stickACanvas)
