@@ -82,10 +82,14 @@ function frame (timestamp) {
       }
       if (cat.isRealtive) {
         cat.pos[0] = cat.pos[0] + rng(pad.x, [-1, 1], [cat.rSpeed, -1 * cat.rSpeed])
+        if (cat.pos[0] < 20) cat.pos[0] = 20
+        if (cat.pos[0] > 160) cat.pos[0] = 160
         cat.pos[1] = cat.pos[1] + rng(pad.y, [-1, 1], [cat.rSpeed, -1 * cat.rSpeed])
+        if (cat.pos[1] < 20) cat.pos[1] = 20
+        if (cat.pos[1] > 160) cat.pos[1] = 160
       } else {
-        cat.pos[0] = rng(pad.x, [-1, 1], [170, 10])
-        cat.pos[1] = rng(pad.y, [-1, 1], [170, 10])
+        cat.pos[0] = rng(pad.x, [-1, 1], [160, 20])
+        cat.pos[1] = rng(pad.y, [-1, 1], [160, 20])
       }
       if (pad.ts !== cat.ts) cat.ts = pad.ts
       break
